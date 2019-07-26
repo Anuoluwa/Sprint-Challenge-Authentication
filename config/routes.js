@@ -1,6 +1,9 @@
 const axios = require('axios');
 
 const { authenticate } = require('../auth/authenticate');
+const { hashPassword } = require('../utils/passwordHelper');
+const User = require('../database/auth-model');
+
 
 module.exports = server => {
   server.post('/api/register', register);
@@ -8,8 +11,33 @@ module.exports = server => {
   server.get('/api/jokes', authenticate, getJokes);
 };
 
+
 function register(req, res) {
   // implement user registration
+  let { username, password: pwd } = req.body;
+  let password = hashPassword(pwd);
+  const user = {
+    username,
+    password
+  };
+  User.insert(user)
+    .then(data => {
+      return res
+        .status(201)
+        .json({ message: "user  created successfully", data: user });
+    })
+    .catch(error => {
+      if (error.code.includes("SQLITE_CONSTRAINT")) {
+        return res.status(409).json({
+          status: 409,
+          error: "user cannot be registered twice"
+        });
+      } else {
+        return res
+          .status(500)
+          .json({ error: "The users information could not be created." });
+      }
+    })
 }
 
 function login(req, res) {
