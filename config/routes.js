@@ -29,16 +29,9 @@ function register(req, res) {
         .json({ message: "user  created successfully", data: user });
     })
     .catch(error => {
-      if (error.code.includes("SQLITE_CONSTRAINT")) {
-        return res.status(409).json({
-          status: 409,
-          error: "user cannot be registered twice"
-        });
-      } else {
-        return res
+      return res
           .status(500)
           .json({ error: "The users information could not be created." });
-      }
     })
 }
 
